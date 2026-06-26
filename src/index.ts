@@ -27,32 +27,32 @@ const UA = 'STRATZ_API pipeworx-mcp-stratz/1.0 (+https://pipeworx.io)';
 const tools: McpToolExport['tools'] = [
   {
     name: 'graphql',
-    description: 'Raw GraphQL passthrough.',
+    description: 'Send an arbitrary GraphQL query (with optional variables) directly to the STRATZ API at api.stratz.com/graphql. Use when no named tool covers the data you need. Requires a STRATZ Bearer token.',
     inputSchema: { type: 'object', properties: { query: { type: 'string' }, variables: { type: 'object' } }, required: ['query'] },
   },
-  { name: 'hero', description: 'Hero detail.', inputSchema: { type: 'object', properties: { id: { type: 'number' } }, required: ['id'] } },
-  { name: 'heroes', description: 'All heroes.', inputSchema: { type: 'object', properties: {} } },
+  { name: 'hero', description: 'Fetch a single Dota 2 hero\'s full detail by numeric hero id — display name, short name, roles, and base/gain stats (armor, strength, agility, intelligence, attack range, move speed, vision range).', inputSchema: { type: 'object', properties: { id: { type: 'number' } }, required: ['id'] } },
+  { name: 'heroes', description: 'Fetch the complete list of all Dota 2 heroes from STRATZ, returning each hero\'s numeric id, name, displayName, and shortName. No arguments required.', inputSchema: { type: 'object', properties: {} } },
   {
     name: 'hero_stats',
-    description: 'Hero win/pick rates by rank.',
+    description: 'Fetch daily win-rate and pick-rate statistics for a Dota 2 hero by numeric hero_id, optionally filtered to a rank bracket (e.g. HERALD, ARCHON, LEGEND, DIVINE, IMMORTAL). Returns matchCount and winCount per day.',
     inputSchema: { type: 'object', properties: { hero_id: { type: 'number' }, rank: { type: 'string' } }, required: ['hero_id'] },
   },
-  { name: 'match', description: 'Single match.', inputSchema: { type: 'object', properties: { id: { type: 'number' } }, required: ['id'] } },
-  { name: 'player', description: 'Player profile.', inputSchema: { type: 'object', properties: { steam_account_id: { type: 'number' } }, required: ['steam_account_id'] } },
+  { name: 'match', description: 'Fetch full details of a single Dota 2 match by numeric match id — duration, start time, Radiant/Dire teams, game mode, lobby type, and per-player stats (heroId, K/D/A, GPM, XPM, level).', inputSchema: { type: 'object', properties: { id: { type: 'number' } }, required: ['id'] } },
+  { name: 'player', description: 'Fetch a Dota 2 player\'s profile by Steam account id — Steam name, profile URL, avatar, total match count, and win count via STRATZ.', inputSchema: { type: 'object', properties: { steam_account_id: { type: 'number' } }, required: ['steam_account_id'] } },
   {
     name: 'player_matches',
-    description: "Player's recent matches.",
+    description: "Fetch a Dota 2 player's recent match history by Steam account id. Returns match id, duration, start time, Radiant win flag, heroId and K/D/A. Supports pagination via take/skip.",
     inputSchema: { type: 'object', properties: { steam_account_id: { type: 'number' }, take: { type: 'number' }, skip: { type: 'number' }, mode: { type: 'string' } }, required: ['steam_account_id'] },
   },
   {
     name: 'player_heroes',
-    description: "Player's top heroes.",
+    description: "Fetch the top heroes played by a Dota 2 player (by Steam account id), ranked by match count — returns heroId, matchCount, and winCount for up to `take` heroes (default 20).",
     inputSchema: { type: 'object', properties: { steam_account_id: { type: 'number' }, take: { type: 'number' } }, required: ['steam_account_id'] },
   },
-  { name: 'live_matches', description: 'Currently live matches.', inputSchema: { type: 'object', properties: {} } },
-  { name: 'tournament', description: 'Tournament detail.', inputSchema: { type: 'object', properties: { id: { type: 'number' } }, required: ['id'] } },
-  { name: 'tournaments', description: 'List tournaments.', inputSchema: { type: 'object', properties: { only_premium: { type: 'boolean' } } } },
-  { name: 'meta', description: 'Current patch + constants.', inputSchema: { type: 'object', properties: {} } },
+  { name: 'live_matches', description: 'Fetch all currently live Dota 2 matches from STRATZ, returning matchId, radiantTeamId, direTeamId, and current game time. No arguments required.', inputSchema: { type: 'object', properties: {} } },
+  { name: 'tournament', description: 'Fetch details for a single Dota 2 tournament (league) by numeric id — display name, description, tier, start/end dates, and prize pool.', inputSchema: { type: 'object', properties: { id: { type: 'number' } }, required: ['id'] } },
+  { name: 'tournaments', description: 'List Dota 2 tournaments from STRATZ ordered by start date (most recent first, up to 50). Pass only_premium=true to restrict to MAJOR and INTERNATIONAL tier events.', inputSchema: { type: 'object', properties: { only_premium: { type: 'boolean' } } } },
+  { name: 'meta', description: 'Fetch current Dota 2 meta constants from STRATZ: the list of game versions (patches) with their id and name. No arguments required.', inputSchema: { type: 'object', properties: {} } },
 ];
 
 async function callTool(name: string, args: Record<string, unknown>): Promise<unknown> {
