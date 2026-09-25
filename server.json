@@ -3,7 +3,7 @@
   "name": "io.github.pipeworx-io/stratz",
   "title": "Stratz",
   "description": "STRATZ Dota 2 MCP.",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "websiteUrl": "https://pipeworx.io/packs/stratz",
   "repository": {
     "url": "https://github.com/pipeworx-io/mcp-stratz",

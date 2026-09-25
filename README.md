@@ -2,7 +2,7 @@
 
 [STRATZ GraphQL](https://docs.stratz.com/) MCP — Dota 2 stats (heroes, matches, leagues, pro players). Free token at stratz.com/api.
 
-Part of [Pipeworx](https://pipeworx.io) — an MCP gateway connecting AI agents to 1476+ live data sources.
+Part of [Pipeworx](https://pipeworx.io) — an MCP gateway connecting AI agents to 1679+ live data sources.
 
 ## Auth
 
@@ -16,7 +16,7 @@ Part of [Pipeworx](https://pipeworx.io) — an MCP gateway connecting AI agents 
 - `hero_stats(hero_id, rank?)` — win rate / pick rate by rank tier
 - `match(id)` — single match
 - `player(steam_account_id)` — player profile
-- `player_matches(steam_account_id, take?, skip?, mode?)` — player's recent matches
+- `player_matches(steam_account_id, take?, skip?)` — player's recent matches, one flat row each (this player's hero, K/D/A, GPM/XPM merged onto the match)
 - `player_heroes(steam_account_id, take?)` — player's top heroes
 - `live_matches()` — currently live matches
 - `tournament(id)` — tournament detail
@@ -26,6 +26,10 @@ Part of [Pipeworx](https://pipeworx.io) — an MCP gateway connecting AI agents 
 ## Notes
 
 The GraphQL schema is large; `graphql(...)` lets you write any query against it. The named tools are convenience wrappers for common shapes.
+
+Field names must match the STRATZ schema exactly — it rejects the first unknown field with `Cannot query field`. Common traps: per-player stats (`heroId`, `kills`, `numLastHits`, `goldPerMinute`) live on `match.players`, not on the match; game modes are `constants { gameModes }`; tournaments order by `FilterOrderBy` (`START_DATE_THEN_TIER`, `LAST_MATCH_TIME`, …). Introspect a type first when unsure: `{ __type(name: "MatchPlayerType") { fields { name } } }`.
+
+Every named tool's query is validated against an introspected STRATZ schema (see the header of `src/index.ts` for the recipe).
 
 ## Data source
 
@@ -75,9 +79,39 @@ directly, instead of just this one's:
 }
 ```
 
-Both URLs reach the same gateway and the same 1476+ data sources. The
+Both URLs reach the same gateway and the same 1679+ data sources. The
 only difference is which pack's tools are listed **directly**; `ask_pipeworx`
 reaches all of them from either one.
+
+## No MCP client? Call it over HTTP
+
+This pack takes your own API key (`_apiKey`) — we don't front one for it, so there's no curl here that would run without it. Inspect any tool: `GET https://gateway.pipeworx.io/v1/tools/graphql`. Find one: `POST https://gateway.pipeworx.io/v1/tools/search_packs` with `{"query":"..."}`.
+
+## Standalone (no gateway account)
+
+This package also runs as a local stdio MCP server — no Pipeworx account, no
+gateway round-trip:
+
+```json
+{
+  "mcpServers": {
+    "stratz": {
+      "command": "npx",
+      "args": ["-y", "@pipeworx/mcp-stratz"]
+    }
+  }
+}
+```
+
+Or run it directly to confirm it starts:
+
+```bash
+npx -y @pipeworx/mcp-stratz
+```
+
+It speaks MCP over stdin/stdout and answers `initialize`/`tools/list`/`tools/call`
+for **only** this pack's tools — none of the shared meta-tools the gateway
+connection above adds. Same source, same tools, no ask_pipeworx routing.
 
 ## Using with ask_pipeworx
 
@@ -98,7 +132,3 @@ The gateway picks the right tool and fills the arguments automatically.
 ## License
 
 MIT
-
-## No MCP client? Call it over HTTP
-
-This pack takes your own API key (`_apiKey`) — we don't front one for it, so there's no curl here that would run without it. Inspect any tool: `GET https://gateway.pipeworx.io/v1/tools/graphql`. Find one: `POST https://gateway.pipeworx.io/v1/tools/search_packs` with `{"query":"..."}`.
